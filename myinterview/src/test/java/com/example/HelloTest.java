@@ -1,57 +1,43 @@
 package com.example;
 
 import org.junit.Test;
-
-import com.example.Hello;
+import org.mockito.Mockito;
 
 import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
 import java.io.PrintStream;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.when;
 
-/**
- * Unit test for Hello.
- * <p/>
- * A unit test aims to test all code and code paths of a specific class.
- */
 public class HelloTest {
 
-	@Test
-	public void testSayHello() {
-		OutputStream os = new ByteArrayOutputStream();
-		PrintStream stream = new PrintStream(os, true);
+    @Test
+    public void testSayHelloWithClient() {
+        String mockApiResponse = "Hello from API!";
+        RESTAPIClientTask apiClientMock = Mockito.mock(RESTAPIClientTask.class);
+        when(apiClientMock.getResponse()).thenReturn(mockApiResponse);
 
-		Hello hi = new Hello();
-		hi.sayHello(stream);
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(outputStream));
 
-		assertThat(os.toString(), is(equalTo(Hello.HELLO + "\r\n")));
-	}
+        Hello hello = new Hello(apiClientMock);
+        hello.sayHello();
 
-	@Test
-	public void testSayHelloAFewTimes() {
-		OutputStream os = new ByteArrayOutputStream();
-		PrintStream stream = new PrintStream(os, true);
+        System.setOut(System.out);
 
-		Hello hi = new Hello();
-		hi.setTimes(3);
-		hi.sayHello(stream);
+        assertEquals("Hello from API!", outputStream.toString().trim());
+    }
 
-		// Does it say "Hello!" three times?
-		String goal = Hello.HELLO + "\r\n" + Hello.HELLO + "\r\n" + Hello.HELLO + "\r\n";
-		assertThat(os.toString(), is(equalTo(goal)));
-	}
+    @Test
+    public void testSayHelloWithServer() {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(outputStream));
 
-	@Test(expected = IllegalArgumentException.class)
-	public void testIllegalArgumentForHello21() {
-		Hello hi = new Hello();
-		hi.setTimes(Hello.MAXIMUM_AMOUNT_OF_TIMES + 1);
-	}
+        Hello hello = new Hello();
+        hello.sayHello();
 
-	@Test(expected = IllegalArgumentException.class)
-	public void testIllegalArgumentForHelloNegative() {
-		Hello hi = new Hello();
-		hi.setTimes(-1);
-	}
+        System.setOut(System.out);
+
+        assertEquals("Olá, mundo!", outputStream.toString().trim());
+    }
 }
